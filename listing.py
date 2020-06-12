@@ -72,11 +72,3 @@ class Listing:
             #stations.append((station, distance))
 
         return "".join(stations)
-
-# price
-# num beds
-# location
-# date available
-# furnished
-# naearest station
-# google maps url?

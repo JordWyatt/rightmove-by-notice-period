@@ -14,7 +14,9 @@ service_account_configuration_path = config["gspread"]["serviceAccountConfigurat
 sheet_name = config["gspread"]["sheetName"]
 sheet = Sheet(service_account_configuration_path, sheet_name)
 
+
 base_url = "https://rightmove.co.uk"
+# Default to 24 hour period for now, don't show let agreed
 base_search_url = base_url + \
     "/property-to-rent/find.html?maxDaysSinceAdded=1&_includeLetAgreed=false&"
 
@@ -34,6 +36,12 @@ def scrape(url):
 
     for listing in listings:
         listing.scrape_details()
+
+    if(config["search"]["availableAfterNWeeks"]):
+        n_weeks = int(config["search"]["availableAfterNWeeks"])
+        print(
+            f'Filtering listings down only those available after {n_weeks} weeks from now')
+        listings = get_listings_available_after_n_weeks(n_weeks, listings)
 
     return listings
 
@@ -59,12 +67,6 @@ def get_listings_available_after_n_weeks(n_weeks, listings):
 
 url = build_search_url()
 listings = scrape(url)
-
-if(config["search"]["availableAfterNWeeks"]):
-    n_weeks = int(config["search"]["availableAfterNWeeks"])
-    print(
-        f'Filtering listings down only those available after {n_weeks} weeks from now')
-    listings = get_listings_available_after_n_weeks(n_weeks, listings)
 
 if listings:
     sheet.add_listings(listings)
