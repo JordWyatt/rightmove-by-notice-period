@@ -3,10 +3,16 @@ import configparser
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlencode
 from listing import Listing
+from sheet import Sheet
 
 config = configparser.ConfigParser()
 config.optionxform = str
 config.read("configuration.ini")
+
+service_account_configuration_path = config["gspread"]["serviceAccountConfigurationPath"]
+sheet_name = config["gspread"]["sheetName"]
+sheet = Sheet(service_account_configuration_path, sheet_name)
+
 base_url = "https://rightmove.co.uk"
 base_search_url = base_url + \
     "/property-to-rent/find.html?maxDaysSinceAdded=1&_includeLetAgreed=false&"
@@ -19,11 +25,16 @@ def build_search_url():
 
 
 def scrape(url):
+    print("Retrieving eligible properties...")
     html = requests.get(url).text
     listing_dom = BeautifulSoup(html, 'html.parser')
     listing_urls = get_listing_urls(listing_dom)
     listings = [Listing(url) for url in listing_urls]
-    scraped = enrich_listings(listings)
+
+    for listing in listings:
+        listing.scrape_details()
+
+    return listings
 
 
 def get_listing_urls(soup):
@@ -34,15 +45,9 @@ def get_listing_urls(soup):
     return listing_urls
 
 
-def enrich_listings(listings):
-    eligible_listings = []
-
-    for listing in listings:
-        listing.scrape_details()
-        eligible_listings.append(listing)
-
-    return eligible_listings
-
-
 url = build_search_url()
-scrape(url)
+listings = scrape(url)
+if listings:
+    sheet.add_listings(listings)
+
+print(f"Done, { len(listings) } new properties were found")

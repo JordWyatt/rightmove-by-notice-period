@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from datetime import date
 
 
 class Listing:
@@ -14,13 +15,14 @@ class Listing:
         dom = self.get_dom()
 
         letting_information = self.get_letting_information(dom)
+        self.date_scraped = date.today().strftime('%m/%d/%Y')
+        self.description = self.get_description(dom)
+        self.price = self.get_price(dom)
+        self.location = self.get_address(dom)
+        self.nearest_stations = self.get_nearest_stations(dom)
         self.date_available = letting_information.get("date_available")
         self.furnished = letting_information.get("furnishing")
         self.deposit = letting_information.get("deposit")
-        self.price = self.get_price(dom)
-        self.description = self.get_description(dom)
-        self.location = self.get_address(dom)
-        self.nearest_station = self.get_nearest_station(dom)
 
     def get_price(self, dom):
         return dom.find("p", id="propertyHeaderPrice").strong.contents[0].replace(
@@ -56,17 +58,20 @@ class Listing:
 
         return letting_details
 
-    def get_nearest_station(self, dom):
+    def get_nearest_stations(self, dom):
         stations = []
         station_list = dom.find(
             "ul", class_="stations-list").find_all("li")
 
         for li in station_list:
             station = li.find("span").string
-            distance = li.find("small").string[1:-1]
-            stations.append((station, distance))
+            distance = li.find("small").string
+            stations.append(station + " " + distance + "\n")
 
-        return stations
+            # Using strings for now, easier with gspread
+            #stations.append((station, distance))
+
+        return "".join(stations)
 
 # price
 # num beds
