@@ -56,13 +56,13 @@ def get_listing_urls(soup):
 
 def get_listings_available_after_n_weeks(n_weeks, listings):
 
-    def convert_date(x): return datetime.datetime.strptime(
-        x, "%d/%m/%Y").date()
+    def convert_date(x):
+        return datetime.datetime.strptime(x, "%d/%m/%Y").date()
 
     today = datetime.datetime.now().date()
     delta = datetime.timedelta(weeks=n_weeks)
     available_after = (today + delta)
-    return [listing for listing in listings if listing.date_available != "Now" and convert_date(listing.date_available) > available_after]
+    return [listing for listing in listings if listing.has_date_available() and convert_date(listing.date_available) > available_after]
 
 
 url = build_search_url()

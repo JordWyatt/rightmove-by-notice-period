@@ -72,3 +72,9 @@ class Listing:
             #stations.append((station, distance))
 
         return "".join(stations)
+
+    def has_date_available(self):
+        if self.date_available and self.date_available != "Now":
+            return True
+
+        return False
