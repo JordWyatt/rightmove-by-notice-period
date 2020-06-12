@@ -1,5 +1,6 @@
 import requests
 import configparser
+import datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlencode
 from listing import Listing
@@ -45,8 +46,26 @@ def get_listing_urls(soup):
     return listing_urls
 
 
+def get_listings_available_after_n_weeks(n_weeks, listings):
+
+    def convert_date(x): return datetime.datetime.strptime(
+        x, "%d/%m/%Y").date()
+
+    today = datetime.datetime.now().date()
+    delta = datetime.timedelta(weeks=n_weeks)
+    available_after = (today + delta)
+    return [listing for listing in listings if listing.date_available != "Now" and convert_date(listing.date_available) > available_after]
+
+
 url = build_search_url()
 listings = scrape(url)
+
+if(config["search"]["availableAfterNWeeks"]):
+    n_weeks = int(config["search"]["availableAfterNWeeks"])
+    print(
+        f'Filtering listings down only those available after {n_weeks} weeks from now')
+    listings = get_listings_available_after_n_weeks(n_weeks, listings)
+
 if listings:
     sheet.add_listings(listings)
 
