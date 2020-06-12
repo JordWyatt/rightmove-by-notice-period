@@ -2,7 +2,7 @@
 
 The lack of ability to filter by 'Date Available' on [RightMove](https://www.rightmove.co.uk/) encouraged me to hack this together.
 
-It scrapes the result of a configured RightMove search and uploads the results to a worksheet on Google Sheets.
+It scrapes the result of a configured RightMove search, which can also take into account the date after you wish to move, and uploads the results to a worksheet on Google Sheets.
 
 ## Installation
 
