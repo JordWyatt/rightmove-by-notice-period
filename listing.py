@@ -15,7 +15,7 @@ class Listing:
         dom = self.get_dom()
 
         letting_information = self.get_letting_information(dom)
-        self.date_scraped = date.today().strftime('%m/%d/%Y')
+        self.date_scraped = date.today().strftime('%d/%m/%Y')
         self.description = self.get_description(dom)
         self.price = self.get_price(dom)
         self.location = self.get_address(dom)
