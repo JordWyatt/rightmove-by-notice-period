@@ -39,6 +39,8 @@ class RightmoveScraper:
         return listing_urls
 
     def get_listings_available_after_n_weeks(self, n_weeks, listings):
+        if(not len(listings)):
+            return listings
 
         print(
             f'Filtering listings down only those available after {n_weeks} weeks from now')
@@ -61,7 +63,7 @@ class RightmoveScraper:
         listing_dom = BeautifulSoup(html, 'html.parser')
         location = self.get_location_name(listing_dom)
 
-        print(f"Scraping properties in {location}")
+        print(f"Scraping properties in {location}...")
 
         listing_urls = self.get_listing_urls(listing_dom)
         listings = [Listing(url) for url in listing_urls]
@@ -72,6 +74,9 @@ class RightmoveScraper:
         return listings
 
     def remove_duplicate_listings(self, listings):
+        if(not len(listings)):
+            return listings
+
         unique = {}
         for listing in listings:
             if listing.url not in unique.keys():
@@ -87,11 +92,12 @@ class RightmoveScraper:
             url = self.build_search_url(identifier)
             listings.extend(self.scrape(url))
 
-        if len(listings):
-            listings = self.remove_duplicate_listings(listings)
-            if(config.get("filters", "availableAfterNWeeks")):
-                listings = self.get_listings_available_after_n_weeks(
-                    int(config.get("filters", "availableAfterNWeeks")), listings)
+        listings = self.remove_duplicate_listings(listings)
+        if(config.get("filters", "availableAfterNWeeks")):
+            listings = self.get_listings_available_after_n_weeks(
+                int(config.get("filters", "availableAfterNWeeks")), listings)
+
+        if(len(listings)):
             write_results = self.sheet.add_listings(listings)
             print(
                 f"\nDone, { len(listings) } eligible properties were found")
