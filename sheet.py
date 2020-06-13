@@ -29,11 +29,27 @@ class Sheet:
             "A1:I1", {'textFormat': {"bold": True, "italic": True}})
         self.worksheet.update('A1:I1', [headers])
 
+    def does_cell_exist_with_value(self, value):
+        try:
+            self.worksheet.find(value)
+            return True
+        except gspread.exceptions.CellNotFound:
+            return False
+
     def add_listings(self, listings):
         print("Writing listings to sheet...")
+        duplicates = 0
+        written = 0
         for listing in listings:
-            row = self.build_row(listing)
-            self.worksheet.insert_row(row, 2)
+            is_existing_listing = self.does_cell_exist_with_value(listing.url)
+            if(not is_existing_listing):
+                row = self.build_row(listing)
+                self.worksheet.insert_row(row, 2)
+                written += 1
+            else:
+                duplicates += 1
+
+        return {"duplicates": duplicates, "written": written}
 
     def build_row(self, listing):
         row = []

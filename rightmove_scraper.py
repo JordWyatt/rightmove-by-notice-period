@@ -69,9 +69,14 @@ class RightmoveScraper:
         listings = self.scrape(url)
 
         if listings:
-            self.sheet.add_listings(listings)
-
-        print(f"Done, { len(listings) } new properties were found")
+            write_results = self.sheet.add_listings(listings)
+            print(f"Done, { len(listings) } properties were found")
+            print(
+                f"{write_results['written']} new properties were added to the worksheet {sheet_name}")
+            print(
+                f"{write_results['duplicates']} duplicate properties were ignored")
+        else:
+            print("No listings found for specified search criteria")
 
 
 if __name__ == '__main__':
