@@ -33,7 +33,7 @@ dontShow - Comma seperated string of property types to exclude, valid values: ho
 furnishTypes - Comma seperated string of eligible furnishing types, valid values: furnished, unfurnished,partFurnished
 
 [gspread]
-serviceAccountConfigurationPath= - Path to your Google API service account configuration
+serviceAccountConfigurationPath - Path to your Google API service account configuration
 sheetName - Name of the sheet to write to
 
 [mailer] (Optional, can be used to email results)
@@ -43,6 +43,35 @@ login - SMTP User / Login
 password - SMTP Password
 sender - SMTP Sender
 receiver - SMTP Receiver
+```
+
+for example:
+
+```
+[locations]
+identifiers = REGION^93802,REGION^87521
+
+[filters]
+availableAfterNWeeks = 7
+radius=1
+minPrice = 0
+maxPrice = 1500
+minBedrooms = 2
+maxBedrooms = 3
+dontShow=houseShare,retirement,student
+furnishTypes=unfurnished,partFurnished
+
+[gspread]
+serviceAccountConfigurationPath=/Users/foobar/.config/gspread/service_account.json
+sheetName=Rental Scraper
+
+[mailer]
+port=465
+server=smtp.gmail.com
+login=foobar@gmail.com
+password=foobarssupersecretpassword
+sender=sender@gmail.com
+receiver=receiver@gmail.com
 ```
 
 Once configured, the script can be executed periodically (using a CRON job for example).
