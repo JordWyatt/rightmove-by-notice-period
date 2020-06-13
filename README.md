@@ -16,7 +16,7 @@ pip install -r requirements.txt
 
 To write to google sheets, you will need to configure access to the Sheets API for a service account, instructions to do so [can be found here](https://gspread.readthedocs.io/en/latest/oauth2.html#service-account).
 
-To configure a search, open `configuration.ini` and edit as required:
+To configure a search, create `configuration.ini` and edit as required:
 
 ```
 [locations]
