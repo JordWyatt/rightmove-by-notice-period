@@ -99,12 +99,13 @@ class RightmoveScraper:
 
         if(len(listings)):
             write_results = self.sheet.add_listings(listings)
-            print(
-                f"\nDone, { len(listings) } eligible properties were found")
-            print(
-                f"{write_results['written']} new properties were added to the worksheet {sheet_name}")
-            print(
-                f"{write_results['duplicates']} properties already existed on the sheet and were ignored")
+            message = f"""
+            
+                { len(listings) } eligible properties were found.
+                {write_results['written']} new properties were added to the worksheet {sheet_name}.
+                {write_results['duplicates']} properties already existed on the sheet and were ignored.
+            """
+            print(message)
         else:
             print("No listings found for specified search criteria")
 
