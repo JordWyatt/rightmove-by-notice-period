@@ -85,33 +85,44 @@ class RightmoveScraper:
                 unique[listing.url] = listing
         return unique.values()
 
-    # TODO - Refactor and debloat this
-    def run(self):
-        listings = []
-        location_identifiers = config.get(
-            "locations", "identifiers").split(",")
+    def filter_listings(self, listings):
+        if(config.get("filters", "availableAfterNWeeks")):
+            listings = self.get_listings_available_after_n_weeks(
+                int(config.get("filters", "availableAfterNWeeks")), listings)
+        return listings
 
+    def scrape_listings(self, location_identifiers):
+        listings = []
         for identifier in location_identifiers:
             url = self.build_search_url(identifier)
             listings.extend(self.scrape(url))
 
         listings = self.remove_duplicate_listings(listings)
-        if(config.get("filters", "availableAfterNWeeks")):
-            listings = self.get_listings_available_after_n_weeks(
-                int(config.get("filters", "availableAfterNWeeks")), listings)
+        return listings
 
-        if(len(listings)):
-            written, duplicates = self.sheet.add_listings(listings)
-            message = dedent(f"""
+    def process_listings(self, listings):
+        written, duplicates = self.sheet.add_listings(listings)
+        message = dedent(f"""
                 { len(listings) } eligible properties were found.
                 {written} new properties were added to the worksheet {sheet_name}.
                 {duplicates} properties already existed on the sheet and were ignored.
                 """)
-            print(message)
+        print(message)
 
-            if(config.has_section("mailer") and written):
-                mailer_config = dict(config.items("mailer"))
-                Mailer(mailer_config).send_mail(message)
+        if(config.has_section("mailer") and written):
+            mailer_config = dict(config.items("mailer"))
+            Mailer(mailer_config).send_mail(message)
+
+    def run(self):
+        location_identifiers = config.get(
+            "locations", "identifiers").split(",")
+
+        listings = self.filter_listings(
+            self.scrape_listings(location_identifiers)
+        )
+
+        if(len(listings)):
+            self.process_listings(listings)
 
         else:
             print("No listings found for specified search criteria")
