@@ -35,6 +35,14 @@ furnishTypes - Comma seperated string of eligible furnishing types, valid values
 [gspread]
 serviceAccountConfigurationPath= - Path to your Google API service account configuration
 sheetName - Name of the sheet to write to
+
+[mailer] (Optional, can be used to email results)
+port - SMTP port
+server - SMTP Server
+login - SMTP User / Login
+password - SMTP Password
+sender - SMTP Sender
+receiver - SMTP Receiver
 ```
 
-Once configured, the script can be should be scheduled to run every 24 hours.
+Once configured, the script can be executed periodically (using a CRON job for example).
