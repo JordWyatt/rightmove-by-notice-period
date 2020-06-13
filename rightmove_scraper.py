@@ -87,7 +87,7 @@ class RightmoveScraper:
             url = self.build_search_url(identifier)
             listings.extend(self.scrape(url))
 
-        if listings:
+        if len(listings):
             listings = self.remove_duplicate_listings(listings)
             if(config.get("filters", "availableAfterNWeeks")):
                 listings = self.get_listings_available_after_n_weeks(
