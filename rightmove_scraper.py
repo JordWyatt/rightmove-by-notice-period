@@ -40,6 +40,9 @@ class RightmoveScraper:
 
     def get_listings_available_after_n_weeks(self, n_weeks, listings):
 
+        print(
+            f'Filtering listings down only those available after {n_weeks} weeks from now')
+
         def convert_date(x):
             return datetime.datetime.strptime(x, "%d/%m/%Y").date()
 
@@ -66,13 +69,6 @@ class RightmoveScraper:
         for listing in listings:
             listing.scrape_details()
 
-        if(config.get("filters", "availableAfterNWeeks")):
-            n_weeks = int(config.get("filters", "availableAfterNWeeks"))
-            print(
-                f'Filtering listings down only those available after {n_weeks} weeks from now')
-            listings = self.get_listings_available_after_n_weeks(
-                n_weeks, listings)
-
         return listings
 
     def remove_duplicate_listings(self, listings):
@@ -92,9 +88,13 @@ class RightmoveScraper:
             listings.extend(self.scrape(url))
 
         if listings:
-            unique_listings = self.remove_duplicate_listings(listings)
-            write_results = self.sheet.add_listings(unique_listings)
-            print(f"\nDone, { len(unique_listings) } properties were found")
+            listings = self.remove_duplicate_listings(listings)
+            if(config.get("filters", "availableAfterNWeeks")):
+                listings = self.get_listings_available_after_n_weeks(
+                    int(config.get("filters", "availableAfterNWeeks")), listings)
+            write_results = self.sheet.add_listings(listings)
+            print(
+                f"\nDone, { len(listings) } eligible properties were found")
             print(
                 f"{write_results['written']} new properties were added to the worksheet {sheet_name}")
             print(
