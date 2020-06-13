@@ -19,9 +19,11 @@ To write to google sheets, you will need to configure access to the Sheets API f
 To configure a search, open `configuration.ini` and edit as required:
 
 ```
-[search]
+[locations]
+locationIdentifiers - Comma seperated RightMove location identifiers, you can grab this from your target search URL in a browser
+
+[filters]
 availableAfterNWeeks - The number of weeks until you need to move, only properties available after this date will be returned
-locationIdentifier - RightMove location identifier, you can grab this from your target search URL in a browser
 radius - Radius in miles
 minPrice - Minimum Price
 maxPrice - Maximum Price

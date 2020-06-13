@@ -1,6 +1,7 @@
 import requests
 import configparser
 import datetime
+import re
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlencode
 from listing import Listing
@@ -10,8 +11,9 @@ config = configparser.ConfigParser()
 config.optionxform = str
 config.read("configuration.ini")
 
-service_account_configuration_path = config["gspread"]["serviceAccountConfigurationPath"]
-sheet_name = config["gspread"]["sheetName"]
+service_account_configuration_path = config.get(
+    "gspread", "serviceAccountConfigurationPath")
+sheet_name = config.get("gspread", "sheetName")
 
 
 class RightmoveScraper:
@@ -23,9 +25,10 @@ class RightmoveScraper:
             "/property-to-rent/find.html?maxDaysSinceAdded=1&_includeLetAgreed=false&"
         self.sheet = Sheet(service_account_configuration_path, sheet_name)
 
-    def build_search_url(self):
-        params = urlencode(config['search'])
-        search_url = self.base_search_url + params
+    def build_search_url(self, location_identifier):
+        parameters = config.items('filters')
+        parameters.append(("locationIdentifier", location_identifier))
+        search_url = self.base_search_url + urlencode(parameters)
         return search_url
 
     def get_listing_urls(self, soup):
@@ -45,18 +48,26 @@ class RightmoveScraper:
         available_after = (today + delta)
         return [listing for listing in listings if listing.has_date_available() and convert_date(listing.date_available) > available_after]
 
+    def get_location_name(self, dom):
+        title = dom.title.string
+        result = re.search(r".*Rent in (.*) \|", title)
+        return result.group(1)
+
     def scrape(self, url):
-        print("Retrieving eligible properties...")
         html = requests.get(url).text
         listing_dom = BeautifulSoup(html, 'html.parser')
+        location = self.get_location_name(listing_dom)
+
+        print(f"Scraping properties in {location}")
+
         listing_urls = self.get_listing_urls(listing_dom)
         listings = [Listing(url) for url in listing_urls]
 
         for listing in listings:
             listing.scrape_details()
 
-        if(config["search"]["availableAfterNWeeks"]):
-            n_weeks = int(config["search"]["availableAfterNWeeks"])
+        if(config.get("filters", "availableAfterNWeeks")):
+            n_weeks = int(config.get("filters", "availableAfterNWeeks"))
             print(
                 f'Filtering listings down only those available after {n_weeks} weeks from now')
             listings = self.get_listings_available_after_n_weeks(
@@ -64,17 +75,30 @@ class RightmoveScraper:
 
         return listings
 
+    def remove_duplicate_listings(self, listings):
+        unique = {}
+        for listing in listings:
+            if listing.url not in unique.keys():
+                unique[listing.url] = listing
+        return unique.values()
+
     def run(self):
-        url = self.build_search_url()
-        listings = self.scrape(url)
+        listings = []
+        location_identifiers = config.get(
+            "locations", "identifiers").split(",")
+
+        for identifier in location_identifiers:
+            url = self.build_search_url(identifier)
+            listings.extend(self.scrape(url))
 
         if listings:
-            write_results = self.sheet.add_listings(listings)
-            print(f"Done, { len(listings) } properties were found")
+            unique_listings = self.remove_duplicate_listings(listings)
+            write_results = self.sheet.add_listings(unique_listings)
+            print(f"\nDone, { len(unique_listings) } properties were found")
             print(
                 f"{write_results['written']} new properties were added to the worksheet {sheet_name}")
             print(
-                f"{write_results['duplicates']} duplicate properties were ignored")
+                f"{write_results['duplicates']} properties already existed on the sheet and were ignored")
         else:
             print("No listings found for specified search criteria")
 
