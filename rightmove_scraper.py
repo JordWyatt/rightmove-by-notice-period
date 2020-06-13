@@ -2,6 +2,8 @@ import requests
 import configparser
 import datetime
 import re
+from textwrap import dedent
+from mailer import Mailer
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlencode
 from listing import Listing
@@ -83,6 +85,7 @@ class RightmoveScraper:
                 unique[listing.url] = listing
         return unique.values()
 
+    # TODO - Refactor and debloat this
     def run(self):
         listings = []
         location_identifiers = config.get(
@@ -98,14 +101,18 @@ class RightmoveScraper:
                 int(config.get("filters", "availableAfterNWeeks")), listings)
 
         if(len(listings)):
-            write_results = self.sheet.add_listings(listings)
-            message = f"""
-            
+            written, duplicates = self.sheet.add_listings(listings)
+            message = dedent(f"""
                 { len(listings) } eligible properties were found.
-                {write_results['written']} new properties were added to the worksheet {sheet_name}.
-                {write_results['duplicates']} properties already existed on the sheet and were ignored.
-            """
+                {written} new properties were added to the worksheet {sheet_name}.
+                {duplicates} properties already existed on the sheet and were ignored.
+                """)
             print(message)
+
+            if(config.has_section("mailer") and written):
+                mailer_config = dict(config.items("mailer"))
+                Mailer(mailer_config).send_mail(message)
+
         else:
             print("No listings found for specified search criteria")
 

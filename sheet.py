@@ -49,7 +49,7 @@ class Sheet:
             else:
                 duplicates += 1
 
-        return {"duplicates": duplicates, "written": written}
+        return (written, duplicates)
 
     def build_row(self, listing):
         row = []
