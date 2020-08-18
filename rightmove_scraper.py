@@ -2,6 +2,7 @@ import requests
 import configparser
 import datetime
 import re
+from datetime import datetime
 from textwrap import dedent
 from mailer import Mailer
 from bs4 import BeautifulSoup
@@ -86,7 +87,7 @@ class RightmoveScraper:
         return unique.values()
 
     def filter_listings(self, listings):
-        if(config.get("filters", "availableAfterNWeeks")):
+        if(config.has_option("filters", "availableAfterNWeeks")):
             listings = self.get_listings_available_after_n_weeks(
                 int(config.get("filters", "availableAfterNWeeks")), listings)
         return listings
@@ -129,4 +130,8 @@ class RightmoveScraper:
 
 
 if __name__ == '__main__':
+    now = datetime.now()
+    print("--------------------------------------------------")
+    print("Executing run at", now.strftime("%d/%m/%Y %H:%M:%S"))
+    print("--------------------------------------------------")
     RightmoveScraper().run()
