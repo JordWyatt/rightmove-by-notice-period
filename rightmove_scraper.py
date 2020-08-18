@@ -2,7 +2,6 @@ import requests
 import configparser
 import datetime
 import re
-from datetime import datetime
 from textwrap import dedent
 from mailer import Mailer
 from bs4 import BeautifulSoup
@@ -124,13 +123,12 @@ class RightmoveScraper:
 
         if(len(listings)):
             self.process_listings(listings)
-
         else:
             print("No listings found for specified search criteria")
 
 
 if __name__ == '__main__':
-    now = datetime.now()
+    now = datetime.datetime.now()
     print("--------------------------------------------------")
     print("Executing run at", now.strftime("%d/%m/%Y %H:%M:%S"))
     print("--------------------------------------------------")
