@@ -23,7 +23,8 @@ To configure a search, create `configuration.ini` and edit as required:
 locationIdentifiers - Comma seperated RightMove location identifiers, you can grab this from your target search URL in a browser
 
 [filters]
-availableAfterNWeeks - The number of weeks until you need to move, only properties available after this date will be returned
+availableAfter - The date you want to filter properties by, only properties available on or after this date will be returned
+availableAfterNWeeks - (OVERRIDES availableAfter) The number of weeks until you need to move, only properties available after this date will be returned
 radius - Radius in miles
 minPrice - Minimum Price
 maxPrice - Maximum Price
@@ -53,6 +54,7 @@ identifiers = REGION^93802,REGION^87521
 
 [filters]
 availableAfterNWeeks = 7
+# availableAfter = 01/01/2023
 radius=1
 minPrice = 0
 maxPrice = 1500

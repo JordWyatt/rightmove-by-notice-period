@@ -23,8 +23,7 @@ class RightmoveScraper:
     def __init__(self):
         self.base_url = "https://rightmove.co.uk"
         # Default to 24 hour period for now, don't show let agreed
-        self.base_search_url = self.base_url + \
-            "/property-to-rent/find.html?maxDaysSinceAdded=1&_includeLetAgreed=false&"
+        self.base_search_url = self.base_url + "/property-to-rent/find.html?_includeLetAgreed=false&"
         self.sheet = Sheet(service_account_configuration_path, sheet_name)
 
     def build_search_url(self, location_identifier):
@@ -54,6 +53,26 @@ class RightmoveScraper:
         delta = datetime.timedelta(weeks=n_weeks)
         available_after = (today + delta)
         return [listing for listing in listings if listing.has_date_available() and convert_date(listing.date_available) > available_after]
+
+    def get_listings_available_after_date(self, date_str, listings):
+        if(not len(listings)):
+            return listings
+
+        print(
+            f'Filtering listings down only those available after {date_str}'
+        )
+
+        def convert_date(x):
+            return datetime.datetime.strptime(x, "%d/%m/%Y").date()
+
+        date = convert_date(date_str)
+        today = datetime.datetime.now().date()
+
+        return [
+            listing for listing in listings if 
+                (listing.has_date_available() and convert_date(listing.date_available) >= date) or
+                (listing.date_available == "Now" and today >= date)
+        ]
 
     def get_location_name(self, dom):
         title = dom.title.string
@@ -89,6 +108,8 @@ class RightmoveScraper:
         if(config.has_option("filters", "availableAfterNWeeks")):
             listings = self.get_listings_available_after_n_weeks(
                 int(config.get("filters", "availableAfterNWeeks")), listings)
+        elif(config.has_option("filters", "availableAfter")):
+            listings = self.get_listings_available_after_date(config.get("filters", "availableAfter"), listings)
         return listings
 
     def scrape_listings(self, location_identifiers):
